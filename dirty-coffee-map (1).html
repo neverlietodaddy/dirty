@@ -1,0 +1,238 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Карта кофеен</title>
+    <style>
+      #map {
+        height: 100vh;
+        width: 100%;
+      }
+      .custom-label {
+        position: absolute;
+        transform: translate(8px, -50%);
+        font-size: 13px;
+        color: #3c3c3c;
+        font-family: sans-serif;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script>
+      const locations = [
+  {
+    "title": "Zen Espressobar",
+    "lat": 50.0874166,
+    "lng": 14.3649767
+  },
+  {
+    "title": "Typhoon Coffee",
+    "lat": 50.0684257,
+    "lng": 14.462166
+  },
+  {
+    "title": "Coffee Room",
+    "lat": 50.0752217,
+    "lng": 14.4487262
+  },
+  {
+    "title": "Headshot Coffee",
+    "lat": 50.0800099,
+    "lng": 14.4173455
+  },
+  {
+    "title": "Headshot Coffee",
+    "lat": 50.0817131,
+    "lng": 14.4209554
+  },
+  {
+    "title": "Efsy",
+    "lat": 50.0849394,
+    "lng": 14.444225
+  },
+  {
+    "title": "NIPPAN BAKERY",
+    "lat": 50.0269587,
+    "lng": 14.365395
+  },
+  {
+    "title": "Lagom Bistro",
+    "lat": 50.098444,
+    "lng": 14.4585537
+  },
+  {
+    "title": "YES cafe letna",
+    "lat": 50.1003638,
+    "lng": 14.4217293
+  },
+  {
+    "title": "YES cafe karlin",
+    "lat": 50.096403,
+    "lng": 14.4490744
+  },
+  {
+    "title": "Dos Mundos Letna",
+    "lat": 50.0998681,
+    "lng": 14.4252379
+  },
+  {
+    "title": "Kafe Damu",
+    "lat": 50.0858996,
+    "lng": 14.4146352
+  },
+  {
+    "title": "Pilot Café",
+    "lat": 50.0996073,
+    "lng": 14.4195318
+  },
+  {
+    "title": "Pilot Café",
+    "lat": 50.0556838,
+    "lng": 14.4304021
+  },
+  {
+    "title": "Ronin Coffee Spot",
+    "lat": 50.0725795,
+    "lng": 14.4383983
+  },
+  {
+    "title": "Kantor Coffee Čítárna",
+    "lat": 50.1041677,
+    "lng": 14.3858816
+  },
+  {
+    "title": "Kávokno",
+    "lat": 50.0808206,
+    "lng": 14.4155762
+  },
+  {
+    "title": "Polibek",
+    "lat": 50.0990716,
+    "lng": 14.3934195
+  },
+  {
+    "title": "kavárna 6,33",
+    "lat": 50.1265261,
+    "lng": 14.4542282
+  },
+  {
+    "title": "Cafe Prostoru",
+    "lat": 50.103902,
+    "lng": 14.3876001
+  },
+  {
+    "title": "Periferie Cafe",
+    "lat": 50.0370959,
+    "lng": 14.40981
+  },
+  {
+    "title": "LetterpressCafe",
+    "lat": 50.072187,
+    "lng": 14.4360105
+  },
+  {
+    "title": "Café Záhorský",
+    "lat": 50.0979389,
+    "lng": 14.3988422
+  },
+  {
+    "title": "Goodlok",
+    "lat": 50.083067,
+    "lng": 14.420125
+  },
+  {
+    "title": "Factory Kafe (bývalá Pragovka)",
+    "lat": 50.1100477,
+    "lng": 14.5078382
+  },
+  {
+    "title": "Version Coffee",
+    "lat": 50.0767525,
+    "lng": 14.4308196
+  },
+  {
+    "title": "Loft Cafe Karlín",
+    "lat": 50.0936851,
+    "lng": 14.4542352
+  },
+  {
+    "title": "21 coffee",
+    "lat": 50.1022247,
+    "lng": 14.4478481
+  },
+  {
+    "title": "Coco Café",
+    "lat": 50.0771193,
+    "lng": 14.4123999
+  }
+];
+
+      const icon = {
+        url: "https://raw.githubusercontent.com/neverlietodaddy/dirty/main/Mask%20group1.png",
+        scaledSize: new google.maps.Size(36, 36)
+      };
+
+      function initMap() {
+        const map = new google.maps.Map(document.getElementById("map"), {
+          center: { lat: 50.085, lng: 14.42 },
+          zoom: 13,
+          disableDefaultUI: true
+        });
+
+        locations.forEach(loc => {
+          new google.maps.Marker({
+            position: { lat: loc.lat, lng: loc.lng },
+            map,
+            title: loc.title,
+            icon: icon
+          });
+
+          const Label = function (position, text, map) {
+            this.position = position;
+            this.text = text;
+            this.map = map;
+            this.div = null;
+            this.setMap(map);
+          };
+
+          Label.prototype = new google.maps.OverlayView();
+
+          Label.prototype.onAdd = function () {
+            const div = document.createElement("div");
+            div.className = "custom-label";
+            div.innerText = this.text;
+            this.div = div;
+            this.getPanes().overlayMouseTarget.appendChild(div);
+          };
+
+          Label.prototype.draw = function () {
+            const projection = this.getProjection();
+            const position = projection.fromLatLngToDivPixel(this.position);
+            if (this.div) {
+              this.div.style.left = position.x + "px";
+              this.div.style.top = position.y + "px";
+            }
+          };
+
+          Label.prototype.onRemove = function () {
+            if (this.div) {
+              this.div.parentNode.removeChild(this.div);
+              this.div = null;
+            }
+          };
+
+          new Label(new google.maps.LatLng(loc.lat, loc.lng), loc.title, map);
+        });
+      }
+    </script>
+
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=ТВОЙ_API_КЛЮЧ&callback=initMap">
+    </script>
+  </body>
+</html>
